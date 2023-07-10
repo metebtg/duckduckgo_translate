@@ -66,6 +66,9 @@ class Translator:
     :param query_string: Query string for vqd.
     :type query_string: :class:`str`
 
+    :param sleep: if `True` then during `max_connection_attempts` wait before request.
+    :type sleep: :class:`bool`
+
     :param max_connection_attempts: Maximum number of connection attempts until a
                                     request is aborted. Defaults to 3.
                                     Set this to 0 to retry infinitely.
@@ -74,7 +77,7 @@ class Translator:
 
     def __init__(
             self, useragent=None, raise_exception=DEFAULT_RAISE_EXCEPTION,
-            timeout=5, headers=None, query_string=None, max_connection_attempts=3, sleep=True):
+            timeout=5, headers=None, query_string=None, max_connection_attempts=3, sleep=False):
 
         self.timeout = timeout
         self.raise_exception = raise_exception
@@ -88,7 +91,6 @@ class Translator:
         self.useragent = useragent
         if self.useragent:
             self.headers['User-Agent'] = self.useragent
-
 
         self.query_string = query_string
         if not self.query_string:
@@ -105,8 +107,8 @@ class Translator:
 
         # Build req url
         vqd_req_url = urlunparse(
-            urlparse(BASE_URL)._replace(query=urlencode(query_params))
-        )
+            urlparse(BASE_URL)._replace(query=urlencode(query_params)))
+            
         vqd_res = requests.get(vqd_req_url, headers=self.headers, timeout=self.timeout)
 
         vqd: str = ''
