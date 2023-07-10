@@ -35,7 +35,6 @@ def _retry_on_connection_error(func: Callable) -> Callable:
             error_string = f"{func.__name__}({', '.join([repr(arg) for arg in args])}): {err}"
             if (kwargs.get('_attempt') or 1) == translator.max_connection_attempts:
                 raise ConnectionException(error_string) from None
-            translator._error(error_string + " [retrying; skip with ^C]")
             try:
                 if kwargs.get('_attempt'):
                     kwargs['_attempt'] += 1
@@ -44,7 +43,6 @@ def _retry_on_connection_error(func: Callable) -> Callable:
                 translator._do_sleep()
                 return call(translator, *args, **kwargs)
             except ConnectionException:
-                translator._error("[skipped by user]")
                 raise ConnectionException(error_string) from None
     return call
 
@@ -174,12 +172,6 @@ class Translator:
     def _do_sleep(self):
         if self.sleep:
             time.sleep(min(expovariate(0.6), 10.0))
-
-    def _error(self, msg: str):
-        """Log a non-fatal error message to stderr, which is repeated at program termination.
-
-        :param msg: Message to be printed."""
-        print(msg)
 
     def translate(
             self, text: str, src: str='', dest: str='en',
